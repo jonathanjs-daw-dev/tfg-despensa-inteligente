@@ -19,7 +19,7 @@ export async function addProduct(req, res) {
   try {
     const parsed = createProductSchema.safeParse(req.body)
     if (!parsed.success) {
-      return res.status(400).json({ error: parsed.error.errors[0].message })
+      return res.status(400).json({ error: parsed.error.issues?.[0]?.message ?? 'Error de validación' })
     }
 
     const product = await createProduct(req.userId, parsed.data)
@@ -38,7 +38,7 @@ export async function editProduct(req, res) {
 
     const parsed = updateProductSchema.safeParse(req.body)
     if (!parsed.success) {
-      return res.status(400).json({ error: parsed.error.errors[0].message })
+      return res.status(400).json({ error: parsed.error.issues?.[0]?.message ?? 'Error de validación' })
     }
 
     const product = await updateProduct(id, req.userId, parsed.data)

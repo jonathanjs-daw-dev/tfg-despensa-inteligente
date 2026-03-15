@@ -1,6 +1,6 @@
 const BASE_URL = import.meta.env.VITE_API_URL
 
-async function apiFetch(endpoint, options = {}, token = null) {
+async function apiFetch(endpoint, options = {}, token = null, redirectOn401 = true) {
   const headers = {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -12,7 +12,7 @@ async function apiFetch(endpoint, options = {}, token = null) {
     credentials: 'include',
   })
 
-  if (res.status === 401) {
+  if (res.status === 401 && redirectOn401) {
     window.location.href = '/login'
     return null
   }
@@ -28,7 +28,7 @@ export const authApi = {
     apiFetch('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
 
   refresh: () =>
-    apiFetch('/auth/refresh', { method: 'POST' }),
+    apiFetch('/auth/refresh', { method: 'POST' }, null, false),
 
   logout: () =>
     apiFetch('/auth/logout', { method: 'POST' }),

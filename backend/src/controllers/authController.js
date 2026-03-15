@@ -19,7 +19,7 @@ export async function register(req, res) {
   try {
     const parsed = registerSchema.safeParse(req.body)
     if (!parsed.success) {
-      return res.status(400).json({ error: parsed.error.errors[0].message })
+      return res.status(400).json({ error: parsed.error.issues?.[0]?.message ?? 'Error de validación' })
     }
 
     const user = await registerUser(parsed.data)
@@ -37,7 +37,7 @@ export async function login(req, res) {
   try {
     const parsed = loginSchema.safeParse(req.body)
     if (!parsed.success) {
-      return res.status(400).json({ error: parsed.error.errors[0].message })
+      return res.status(400).json({ error: parsed.error.issues?.[0]?.message ?? 'Error de validación' })
     }
 
     const user = await loginUser(parsed.data)
