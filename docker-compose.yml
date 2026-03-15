@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:17
+    container_name: despensa_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: "12345"
+      POSTGRES_DB: despensa
+    ports:
+      - "5432:5432"
+    volumes:
+      - despensa_data:/var/lib/postgresql/data
+
+volumes:
+  despensa_data:

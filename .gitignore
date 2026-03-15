@@ -1,0 +1,29 @@
+# Dependencias
+node_modules/
+
+# Variables de entorno — NUNCA van al repositorio
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+dist/
+build/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Editores
+.vscode/settings.json
+.idea/
+
+# Coverage
+coverage/
+
+# Prisma
+*.db
