@@ -1,0 +1,128 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────
+// ENUM
+// ─────────────────────────────────────────────
+
+enum Category {
+  LACTEOS
+  CARNES_PESCADOS
+  FRUTAS_VERDURAS
+  CEREALES
+  CONSERVAS
+  BEBIDAS
+  CONGELADOS
+  CONDIMENTOS
+  LIMPIEZA
+  OTROS
+}
+
+// ─────────────────────────────────────────────
+// MODELOS
+// ─────────────────────────────────────────────
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  products      Product[]
+  shoppingList  ShoppingList[]
+  savedRecipes  SavedRecipe[]
+  recipeHistory RecipeHistory[]
+  aiUsageLogs   AiUsageLog[]
+
+  @@map("users")
+}
+
+model Product {
+  id         Int       @id @default(autoincrement())
+  userId     Int       @map("user_id")
+  name       String
+  category   Category  @default(OTROS)
+  quantity   Float
+  unit       String
+  expiryDate DateTime? @map("expiry_date")
+  barcode    String?
+  imageUrl   String?   @map("image_url")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("products")
+}
+
+model ShoppingList {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  name      String
+  quantity  Float
+  unit      String
+  isChecked Boolean  @default(false) @map("is_checked")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("shopping_list")
+}
+
+model SavedRecipe {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @map("user_id")
+  name        String
+  ingredients Json
+  steps       Json
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("saved_recipes")
+}
+
+model RecipeHistory {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @map("user_id")
+  name        String
+  ingredients Json
+  steps       Json
+  cookedAt    DateTime @default(now()) @map("cooked_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("recipe_history")
+}
+
+model BarcodeCache {
+  id          Int      @id @default(autoincrement())
+  barcode     String   @unique
+  productData Json     @map("product_data")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("barcode_cache")
+}
+
+model AiUsageLog {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @map("user_id")
+  actionType String   @map("action_type")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("ai_usage_log")
+}
