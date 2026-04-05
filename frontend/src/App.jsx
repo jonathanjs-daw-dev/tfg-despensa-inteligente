@@ -3,6 +3,10 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Pantry from './pages/Pantry'
+import Dashboard from './pages/Dashboard'
+import AddProduct from './pages/AddProduct'
+import ShoppingList from './pages/ShoppingList'
+import Layout from './components/Layout'
 
 function ProtectedRoute({ children }) {
   const { accessToken, loading } = useAuth()
@@ -18,11 +22,44 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route
-        path="/"
+        path="/dashboard"
         element={
           <ProtectedRoute>
-            <Pantry />
+            <Layout>
+              <Dashboard />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/add"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <AddProduct />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/pantry"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Pantry />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/shopping-list"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <ShoppingList />
+            </Layout>
           </ProtectedRoute>
         }
       />

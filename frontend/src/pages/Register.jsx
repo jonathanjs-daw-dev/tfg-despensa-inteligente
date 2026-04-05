@@ -2,6 +2,10 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { authApi } from '../services/api'
 import { useAuth } from '../context/AuthContext'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
 
 export default function Register() {
   const { saveSession } = useAuth()
@@ -31,25 +35,56 @@ export default function Register() {
   }
 
   return (
-    <div>
-      <h1>Crear cuenta</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Nombre </label>
-          <input type="text" name="name" value={form.name} onChange={handleChange} required />
-        </div>
-        <div>
-          <label>Email </label>
-          <input type="email" name="email" value={form.email} onChange={handleChange} required />
-        </div>
-        <div>
-          <label>Contraseña </label>
-          <input type="password" name="password" value={form.password} onChange={handleChange} required />
-        </div>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        <button type="submit">Registrarse</button>
-      </form>
-      <p>¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link></p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <Card className="w-full max-w-sm">
+        <CardHeader>
+          <CardTitle>Crear cuenta</CardTitle>
+          <CardDescription>Empieza a gestionar tu despensa</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Nombre</Label>
+              <Input
+                id="name"
+                type="text"
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Contraseña</Label>
+              <Input
+                id="password"
+                type="password"
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            {error && <p className="text-sm text-red-500">{error}</p>}
+            <Button type="submit" className="w-full">Registrarse</Button>
+          </form>
+          <p className="text-sm text-center mt-4 text-gray-500">
+            ¿Ya tienes cuenta?{' '}
+            <Link to="/login" className="text-[#10b981] hover:underline">Inicia sesión</Link>
+          </p>
+        </CardContent>
+      </Card>
     </div>
   )
 }
