@@ -14,6 +14,8 @@ import {
 } from '@/components/ui/select'
 import { DatePicker } from '@/components/DatePicker'
 
+const UNITS = ['kg', 'g', 'mg', 'L', 'ml', 'cl', 'oz', 'lb', 'unidad', 'docena', 'pack', 'lata', 'bote', 'bolsa', 'caja', 'sobre']
+
 const CATEGORIES = [
   'LACTEOS',
   'CARNES_PESCADOS',
@@ -31,7 +33,7 @@ const EMPTY_FORM = {
   name: '',
   category: 'OTROS',
   quantity: '',
-  unit: '',
+  unit: 'unidad',
   expiryDate: '',
 }
 
@@ -121,15 +123,25 @@ export default function AddProduct() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="unit">Unidad</Label>
-                <Input
-                  id="unit"
-                  name="unit"
+                <Label>Unidad</Label>
+                <Select
                   value={form.unit}
-                  onChange={handleFormChange}
-                  placeholder="kg, L, gr, unidades..."
-                  required
-                />
+                  onValueChange={(val) => {
+                    setForm({ ...form, unit: val })
+                    setSuccess(false)
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {UNITS.map((u) => (
+                      <SelectItem key={u} value={u}>
+                        {u}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 

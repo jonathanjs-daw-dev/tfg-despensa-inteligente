@@ -11,6 +11,9 @@ export const loginSchema = z.object({
   password: z.string().min(1, 'La contraseña es requerida'),
 })
 
+// --- Shared ---
+const UNITS = ['kg', 'g', 'mg', 'L', 'ml', 'cl', 'oz', 'lb', 'unidad', 'docena', 'pack', 'lata', 'bote', 'bolsa', 'caja', 'sobre']
+
 // --- Product schemas ---
 const CATEGORIES = [
   'LACTEOS',
@@ -29,7 +32,7 @@ export const createProductSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido'),
   category: z.enum(CATEGORIES).default('OTROS'),
   quantity: z.number().positive('La cantidad debe ser mayor que 0'),
-  unit: z.string().min(1, 'La unidad es requerida'),
+  unit: z.enum(UNITS, { message: 'Unidad no válida' }),
   expiryDate: z.string().nullable().optional(),
   barcode: z.string().nullable().optional(),
   imageUrl: z.string().url('URL de imagen no válida').nullable().optional(),
@@ -41,7 +44,7 @@ export const updateProductSchema = createProductSchema.partial()
 export const createShoppingItemSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido'),
   quantity: z.number().positive('La cantidad debe ser mayor que 0'),
-  unit: z.string().min(1, 'La unidad es requerida'),
+  unit: z.enum(UNITS, { message: 'Unidad no válida' }),
   isChecked: z.boolean().optional(),
 })
 

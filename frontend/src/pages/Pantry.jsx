@@ -23,6 +23,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DatePicker } from '@/components/DatePicker'
 
+const UNITS = ['kg', 'g', 'mg', 'L', 'ml', 'cl', 'oz', 'lb', 'unidad', 'docena', 'pack', 'lata', 'bote', 'bolsa', 'caja', 'sobre']
+
 const CATEGORIES = [
   'LACTEOS',
   'CARNES_PESCADOS',
@@ -186,11 +188,21 @@ export default function Pantry() {
                             />
                           </TableCell>
                           <TableCell>
-                            <Input
+                            <Select
                               value={editForm.unit}
-                              onChange={(e) => setEditForm({ ...editForm, unit: e.target.value })}
-                              className="h-8 w-20"
-                            />
+                              onValueChange={(val) => setEditForm({ ...editForm, unit: val })}
+                            >
+                              <SelectTrigger className="h-8 w-28">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {UNITS.map((u) => (
+                                  <SelectItem key={u} value={u}>
+                                    {u}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           </TableCell>
                           <TableCell>
                             <DatePicker

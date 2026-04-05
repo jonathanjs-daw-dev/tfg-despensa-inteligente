@@ -4,12 +4,21 @@ import { useAuth } from '../context/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+
+const UNITS = ['kg', 'g', 'mg', 'L', 'ml', 'cl', 'oz', 'lb', 'unidad', 'docena', 'pack', 'lata', 'bote', 'bolsa', 'caja', 'sobre']
 
 export default function ShoppingList() {
   const { accessToken } = useAuth()
 
   const [items, setItems] = useState([])
-  const [form, setForm] = useState({ name: '', quantity: '', unit: '' })
+  const [form, setForm] = useState({ name: '', quantity: '', unit: 'unidad' })
   const [adding, setAdding] = useState(false)
 
   useEffect(() => {
@@ -98,12 +107,22 @@ export default function ShoppingList() {
                 onChange={(e) => setForm({ ...form, quantity: e.target.value })}
               />
             </div>
-            <div className="w-24">
-              <Input
-                placeholder="Unidad"
+            <div className="w-32">
+              <Select
                 value={form.unit}
-                onChange={(e) => setForm({ ...form, unit: e.target.value })}
-              />
+                onValueChange={(val) => setForm({ ...form, unit: val })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {UNITS.map((u) => (
+                    <SelectItem key={u} value={u}>
+                      {u}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <Button type="submit" disabled={adding}>
               Añadir
