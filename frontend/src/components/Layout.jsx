@@ -39,8 +39,11 @@ export default function Layout({ children }) {
       {/* ── Sidebar — solo desktop (md+) ── */}
       <aside className="hidden md:flex w-60 min-h-screen bg-[#f9fafb] border-r border-[#e5e7eb] flex-col p-4 shrink-0">
         <div className="mb-6">
-          <p className="font-bold text-gray-900">Despensa Inteligente</p>
-          <p className="text-sm text-gray-500">{user?.name ?? ''}</p>
+          <Link to="/dashboard" className="flex items-center gap-2 mb-1 hover:opacity-80 transition-opacity">
+            <img src="/apple-icon.png" alt="Logo Despensa Inteligente" className="h-8 w-8 rounded-md" />
+            <p className="font-bold text-gray-900">Despensa Inteligente</p>
+          </Link>
+          <p className="text-sm text-gray-500 pl-10">{user?.name ?? ''}</p>
         </div>
 
         <nav className="space-y-1 flex-1">
@@ -68,14 +71,10 @@ export default function Layout({ children }) {
 
         {/* Top header — solo móvil */}
         <header className="md:hidden sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-2">
-            <Avatar className="h-7 w-7">
-              <AvatarFallback className="text-xs bg-green-100 text-green-800">
-                {user?.name?.charAt(0).toUpperCase() ?? '?'}
-              </AvatarFallback>
-            </Avatar>
+          <Link to="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <img src="/apple-icon.png" alt="Logo Despensa Inteligente" className="h-7 w-7 rounded-md" />
             <span className="font-semibold text-sm text-gray-900">Despensa Inteligente</span>
-          </div>
+          </Link>
           <Button variant="ghost" size="sm" className="text-gray-500 text-xs" onClick={handleLogout}>
             Salir
           </Button>
