@@ -23,7 +23,24 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DatePicker } from '@/components/DatePicker'
 
-const UNITS = ['kg', 'g', 'mg', 'L', 'ml', 'cl', 'oz', 'lb', 'unidad', 'docena', 'pack', 'lata', 'bote', 'bolsa', 'caja', 'sobre']
+const UNITS = [
+  'kg',
+  'g',
+  'mg',
+  'L',
+  'ml',
+  'cl',
+  'oz',
+  'lb',
+  'unidad',
+  'docena',
+  'pack',
+  'lata',
+  'bote',
+  'bolsa',
+  'caja',
+  'sobre',
+]
 
 const CATEGORIES = [
   'LACTEOS',
@@ -62,6 +79,9 @@ export default function Pantry() {
   const [products, setProducts] = useState([])
   const [editingId, setEditingId] = useState(null)
   const [editForm, setEditForm] = useState({})
+  const [search, setSearch] = useState('')
+  const [filterCategory, setFilterCategory] = useState('ALL')
+  const [filterStatus, setFilterStatus] = useState('ALL')
 
   useEffect(() => {
     loadProducts()
@@ -122,18 +142,90 @@ export default function Pantry() {
     return <Badge className={cls}>{text}</Badge>
   }
 
+  const filteredProducts = products.filter((p) => {
+    const matchName = p.name.toLowerCase().includes(search.toLowerCase())
+    const matchCat = filterCategory === 'ALL' || p.category === filterCategory
+    const matchStatus = filterStatus === 'ALL' || getStatusKey(p.expiryDate) === filterStatus
+    return matchName && matchCat && matchStatus
+  })
+
+  const hasActiveFilters = search !== '' || filterCategory !== 'ALL' || filterStatus !== 'ALL'
+
+  function clearFilters() {
+    setSearch('')
+    setFilterCategory('ALL')
+    setFilterStatus('ALL')
+  }
+
   return (
     <div>
       <h1 className="text-2xl font-semibold mb-6">Mi Despensa</h1>
 
+      {/* Barra de filtros */}
+      <div className="flex flex-wrap gap-3 mb-4 items-end">
+        <div className="flex flex-col gap-1">
+          <Label className="text-xs text-gray-500">Buscar por nombre</Label>
+          <Input
+            placeholder="Ej: leche, arroz…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="h-9 w-52"
+          />
+        </div>
+        <div className="flex flex-col gap-1">
+          <Label className="text-xs text-gray-500">Categoría</Label>
+          <Select value={filterCategory} onValueChange={setFilterCategory}>
+            <SelectTrigger className="h-9 w-44">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">Todas</SelectItem>
+              {CATEGORIES.map((c) => (
+                <SelectItem key={c} value={c}>
+                  {c}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex flex-col gap-1">
+          <Label className="text-xs text-gray-500">Estado</Label>
+          <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <SelectTrigger className="h-9 w-36">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">Todos</SelectItem>
+              <SelectItem value="OK">OK</SelectItem>
+              <SelectItem value="PRÓXIMO">Próximo</SelectItem>
+              <SelectItem value="URGENTE">Urgente</SelectItem>
+              <SelectItem value="CADUCADO">Caducado</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        {hasActiveFilters && (
+          <Button variant="ghost" size="sm" className="h-9 text-gray-500" onClick={clearFilters}>
+            Limpiar filtros
+          </Button>
+        )}
+      </div>
+
       {/* Tabla de productos */}
       <Card className="mb-8">
         <CardHeader>
-          <CardTitle className="text-base">Productos ({products.length})</CardTitle>
+          <CardTitle className="text-base">
+            {hasActiveFilters
+              ? `Productos (${filteredProducts.length} de ${products.length})`
+              : `Productos (${products.length})`}
+          </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          {products.length === 0 ? (
-            <p className="text-sm text-gray-500 p-6">No tienes productos en la despensa.</p>
+          {filteredProducts.length === 0 ? (
+            <p className="text-sm text-gray-500 p-6">
+              {products.length === 0
+                ? 'No tienes productos en la despensa.'
+                : 'No hay productos que coincidan con los filtros.'}
+            </p>
           ) : (
             <div className="overflow-x-auto">
               <Table>
@@ -149,7 +241,7 @@ export default function Pantry() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {products.map((p) => (
+                  {filteredProducts.map((p) => (
                     <TableRow key={p.id}>
                       {editingId === p.id ? (
                         <>
