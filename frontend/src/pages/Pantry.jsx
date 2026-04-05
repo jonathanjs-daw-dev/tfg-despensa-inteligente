@@ -21,6 +21,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { DatePicker } from '@/components/DatePicker'
 
 const CATEGORIES = [
   'LACTEOS',
@@ -192,13 +193,9 @@ export default function Pantry() {
                             />
                           </TableCell>
                           <TableCell>
-                            <Input
-                              type="date"
+                            <DatePicker
                               value={editForm.expiryDate}
-                              onChange={(e) =>
-                                setEditForm({ ...editForm, expiryDate: e.target.value })
-                              }
-                              className="h-8"
+                              onChange={(val) => setEditForm({ ...editForm, expiryDate: val })}
                             />
                           </TableCell>
                           <TableCell>—</TableCell>

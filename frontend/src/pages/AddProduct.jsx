@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { DatePicker } from '@/components/DatePicker'
 
 const CATEGORIES = [
   'LACTEOS',
@@ -126,20 +127,20 @@ export default function AddProduct() {
                   name="unit"
                   value={form.unit}
                   onChange={handleFormChange}
-                  placeholder="kg, l, unidades..."
+                  placeholder="kg, L, gr, unidades..."
                   required
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="expiryDate">Fecha caducidad</Label>
-              <Input
-                id="expiryDate"
-                type="date"
-                name="expiryDate"
+              <Label>Fecha caducidad</Label>
+              <DatePicker
                 value={form.expiryDate}
-                onChange={handleFormChange}
+                onChange={(val) => {
+                  setForm({ ...form, expiryDate: val })
+                  setSuccess(false)
+                }}
               />
             </div>
 
