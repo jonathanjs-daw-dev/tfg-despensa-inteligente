@@ -4,6 +4,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Pantry from './pages/Pantry'
 import Dashboard from './pages/Dashboard'
+import AddProduct from './pages/AddProduct'
 import Layout from './components/Layout'
 
 function ProtectedRoute({ children }) {
@@ -25,7 +26,19 @@ function AppRoutes() {
         path="/dashboard"
         element={
           <ProtectedRoute>
-            <Layout><Dashboard /></Layout>
+            <Layout>
+              <Dashboard />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/add"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <AddProduct />
+            </Layout>
           </ProtectedRoute>
         }
       />
@@ -33,7 +46,9 @@ function AppRoutes() {
         path="/pantry"
         element={
           <ProtectedRoute>
-            <Layout><Pantry /></Layout>
+            <Layout>
+              <Pantry />
+            </Layout>
           </ProtectedRoute>
         }
       />
