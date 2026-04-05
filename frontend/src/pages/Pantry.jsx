@@ -1,7 +1,17 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { productsApi, authApi } from '../services/api'
+import { productsApi } from '../services/api'
 import { useAuth } from '../context/AuthContext'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Badge } from '@/components/ui/badge'
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select'
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from '@/components/ui/table'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 const CATEGORIES = [
   'LACTEOS', 'CARNES_PESCADOS', 'FRUTAS_VERDURAS', 'CEREALES',
@@ -21,9 +31,17 @@ function expiryStatus(dateStr) {
   return `OK (${days}d)`
 }
 
+function getStatusKey(dateStr) {
+  if (!dateStr) return 'NONE'
+  const days = Math.ceil((new Date(dateStr) - new Date()) / (1000 * 60 * 60 * 24))
+  if (days < 0) return 'CADUCADO'
+  if (days <= 3) return 'URGENTE'
+  if (days <= 7) return 'PRÓXIMO'
+  return 'OK'
+}
+
 export default function Pantry() {
-  const { accessToken, user, closeSession } = useAuth()
-  const navigate = useNavigate()
+  const { accessToken } = useAuth()
 
   const [products, setProducts] = useState([])
   const [form, setForm] = useState(EMPTY_FORM)
@@ -101,104 +119,200 @@ export default function Pantry() {
     loadProducts()
   }
 
-  async function handleLogout() {
-    await closeSession()
-    navigate('/login')
+  const statusBadge = (dateStr) => {
+    const key = getStatusKey(dateStr)
+    const text = expiryStatus(dateStr)
+    const cls =
+      key === 'CADUCADO' ? 'bg-red-500 text-white' :
+      key === 'URGENTE'  ? 'bg-amber-500 text-white' :
+      key === 'PRÓXIMO'  ? 'bg-yellow-400 text-black' :
+      key === 'OK'       ? 'bg-green-100 text-green-800' :
+      'bg-gray-100 text-gray-500'
+    return <Badge className={cls}>{text}</Badge>
   }
 
   return (
     <div>
-      <h1>Despensa — {user?.name}</h1>
-      <button onClick={handleLogout}>Cerrar sesión</button>
+      <h1 className="text-2xl font-semibold mb-6">Mi Despensa</h1>
 
-      <hr />
+      {/* Tabla de productos */}
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle className="text-base">Productos ({products.length})</CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          {products.length === 0 ? (
+            <p className="text-sm text-gray-500 p-6">No tienes productos en la despensa.</p>
+          ) : (
+            <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead>Categoría</TableHead>
+                  <TableHead>Cantidad</TableHead>
+                  <TableHead>Unidad</TableHead>
+                  <TableHead>Caducidad</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead>Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {products.map((p) => (
+                  <TableRow key={p.id}>
+                    {editingId === p.id ? (
+                      <>
+                        <TableCell>
+                          <Input
+                            value={editForm.name}
+                            onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                            className="h-8"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Select
+                            value={editForm.category}
+                            onValueChange={(val) => setEditForm({ ...editForm, category: val })}
+                          >
+                            <SelectTrigger className="h-8 w-40">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {CATEGORIES.map((c) => (
+                                <SelectItem key={c} value={c}>{c}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            type="number"
+                            value={editForm.quantity}
+                            onChange={(e) => setEditForm({ ...editForm, quantity: e.target.value })}
+                            className="h-8 w-20"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            value={editForm.unit}
+                            onChange={(e) => setEditForm({ ...editForm, unit: e.target.value })}
+                            className="h-8 w-20"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            type="date"
+                            value={editForm.expiryDate}
+                            onChange={(e) => setEditForm({ ...editForm, expiryDate: e.target.value })}
+                            className="h-8"
+                          />
+                        </TableCell>
+                        <TableCell>—</TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button size="sm" onClick={() => handleEdit(p.id)}>Guardar</Button>
+                            <Button size="sm" variant="outline" onClick={() => setEditingId(null)}>Cancelar</Button>
+                          </div>
+                        </TableCell>
+                      </>
+                    ) : (
+                      <>
+                        <TableCell className="font-medium">{p.name}</TableCell>
+                        <TableCell>{p.category}</TableCell>
+                        <TableCell>{p.quantity}</TableCell>
+                        <TableCell>{p.unit}</TableCell>
+                        <TableCell>{p.expiryDate ? p.expiryDate.split('T')[0] : '—'}</TableCell>
+                        <TableCell>{statusBadge(p.expiryDate)}</TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="outline" onClick={() => startEdit(p)}>Editar</Button>
+                            <Button size="sm" variant="destructive" onClick={() => handleDelete(p.id)}>Eliminar</Button>
+                          </div>
+                        </TableCell>
+                      </>
+                    )}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-      <h2>Mis productos ({products.length})</h2>
-
-      {products.length === 0 ? (
-        <p>No tienes productos en la despensa.</p>
-      ) : (
-        <table border="1" cellPadding="6">
-          <thead>
-            <tr>
-              <th>Nombre</th>
-              <th>Categoría</th>
-              <th>Cantidad</th>
-              <th>Unidad</th>
-              <th>Caducidad</th>
-              <th>Estado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((p) => (
-              <tr key={p.id}>
-                {editingId === p.id ? (
-                  <>
-                    <td><input value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })} /></td>
-                    <td>
-                      <select value={editForm.category} onChange={e => setEditForm({ ...editForm, category: e.target.value })}>
-                        {CATEGORIES.map(c => <option key={c}>{c}</option>)}
-                      </select>
-                    </td>
-                    <td><input type="number" value={editForm.quantity} onChange={e => setEditForm({ ...editForm, quantity: e.target.value })} /></td>
-                    <td><input value={editForm.unit} onChange={e => setEditForm({ ...editForm, unit: e.target.value })} /></td>
-                    <td><input type="date" value={editForm.expiryDate} onChange={e => setEditForm({ ...editForm, expiryDate: e.target.value })} /></td>
-                    <td>—</td>
-                    <td>
-                      <button onClick={() => handleEdit(p.id)}>Guardar</button>
-                      <button onClick={() => setEditingId(null)}>Cancelar</button>
-                    </td>
-                  </>
-                ) : (
-                  <>
-                    <td>{p.name}</td>
-                    <td>{p.category}</td>
-                    <td>{p.quantity}</td>
-                    <td>{p.unit}</td>
-                    <td>{p.expiryDate ? p.expiryDate.split('T')[0] : '—'}</td>
-                    <td>{expiryStatus(p.expiryDate)}</td>
-                    <td>
-                      <button onClick={() => startEdit(p)}>Editar</button>
-                      <button onClick={() => handleDelete(p.id)}>Eliminar</button>
-                    </td>
-                  </>
-                )}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-
-      <hr />
-
-      <h2>Añadir producto</h2>
-      <form onSubmit={handleAdd}>
-        <div>
-          <label>Nombre </label>
-          <input name="name" value={form.name} onChange={handleFormChange} required />
-        </div>
-        <div>
-          <label>Categoría </label>
-          <select name="category" value={form.category} onChange={handleFormChange}>
-            {CATEGORIES.map(c => <option key={c}>{c}</option>)}
-          </select>
-        </div>
-        <div>
-          <label>Cantidad </label>
-          <input type="number" step="0.1" name="quantity" value={form.quantity} onChange={handleFormChange} required />
-        </div>
-        <div>
-          <label>Unidad </label>
-          <input name="unit" value={form.unit} onChange={handleFormChange} placeholder="kg, l, unidades..." required />
-        </div>
-        <div>
-          <label>Fecha caducidad </label>
-          <input type="date" name="expiryDate" value={form.expiryDate} onChange={handleFormChange} />
-        </div>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        <button type="submit">Añadir</button>
-      </form>
+      {/* Formulario añadir */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Añadir producto</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleAdd} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Nombre</Label>
+              <Input
+                id="name"
+                name="name"
+                value={form.name}
+                onChange={handleFormChange}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Categoría</Label>
+              <Select
+                value={form.category}
+                onValueChange={(val) => setForm({ ...form, category: val })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CATEGORIES.map((c) => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="quantity">Cantidad</Label>
+              <Input
+                id="quantity"
+                type="number"
+                step="0.1"
+                name="quantity"
+                value={form.quantity}
+                onChange={handleFormChange}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="unit">Unidad</Label>
+              <Input
+                id="unit"
+                name="unit"
+                value={form.unit}
+                onChange={handleFormChange}
+                placeholder="kg, l, unidades..."
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="expiryDate">Fecha caducidad</Label>
+              <Input
+                id="expiryDate"
+                type="date"
+                name="expiryDate"
+                value={form.expiryDate}
+                onChange={handleFormChange}
+              />
+            </div>
+            <div className="flex items-end">
+              {error && <p className="text-sm text-red-500 mb-2">{error}</p>}
+              <Button type="submit" className="w-full">Añadir</Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   )
 }
