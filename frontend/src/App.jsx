@@ -5,6 +5,7 @@ import Register from './pages/Register'
 import Pantry from './pages/Pantry'
 import Dashboard from './pages/Dashboard'
 import AddProduct from './pages/AddProduct'
+import ShoppingList from './pages/ShoppingList'
 import Layout from './components/Layout'
 
 function ProtectedRoute({ children }) {
@@ -48,6 +49,16 @@ function AppRoutes() {
           <ProtectedRoute>
             <Layout>
               <Pantry />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/shopping-list"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <ShoppingList />
             </Layout>
           </ProtectedRoute>
         }

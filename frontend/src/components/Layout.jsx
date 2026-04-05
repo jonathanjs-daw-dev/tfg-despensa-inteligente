@@ -54,6 +54,7 @@ export default function Layout({ children }) {
           {navLink('/dashboard', 'Dashboard')}
           {navLink('/add', 'Añadir')}
           {navLink('/pantry', 'Mi Despensa')}
+          {navLink('/shopping-list', 'Lista de la compra')}
         </nav>
 
         <div className="mt-auto pt-4 border-t border-[#e5e7eb]">
@@ -161,6 +162,33 @@ export default function Layout({ children }) {
               />
             </svg>
             Mi Despensa
+          </Link>
+          <Link to="/shopping-list" className={bottomTabClass('/shopping-list')}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1.8}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"
+              />
+              <rect
+                x="9"
+                y="3"
+                width="6"
+                height="4"
+                rx="1"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6M9 16h4" />
+            </svg>
+            Compra
           </Link>
         </nav>
       </div>

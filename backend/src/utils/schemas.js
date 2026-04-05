@@ -13,8 +13,16 @@ export const loginSchema = z.object({
 
 // --- Product schemas ---
 const CATEGORIES = [
-  'LACTEOS', 'CARNES_PESCADOS', 'FRUTAS_VERDURAS', 'CEREALES',
-  'CONSERVAS', 'BEBIDAS', 'CONGELADOS', 'CONDIMENTOS', 'LIMPIEZA', 'OTROS',
+  'LACTEOS',
+  'CARNES_PESCADOS',
+  'FRUTAS_VERDURAS',
+  'CEREALES',
+  'CONSERVAS',
+  'BEBIDAS',
+  'CONGELADOS',
+  'CONDIMENTOS',
+  'LIMPIEZA',
+  'OTROS',
 ]
 
 export const createProductSchema = z.object({
@@ -28,3 +36,13 @@ export const createProductSchema = z.object({
 })
 
 export const updateProductSchema = createProductSchema.partial()
+
+// --- Shopping list schemas ---
+export const createShoppingItemSchema = z.object({
+  name: z.string().min(1, 'El nombre es requerido'),
+  quantity: z.number().positive('La cantidad debe ser mayor que 0'),
+  unit: z.string().min(1, 'La unidad es requerida'),
+  isChecked: z.boolean().optional(),
+})
+
+export const updateShoppingItemSchema = createShoppingItemSchema.partial()
