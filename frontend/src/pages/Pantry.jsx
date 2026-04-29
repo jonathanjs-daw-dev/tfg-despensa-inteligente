@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { productsApi } from '../services/api'
 import { useAuth } from '../context/AuthContext'
+import { usePageHeader } from '@/context/PageHeaderContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -74,6 +75,7 @@ function getStatusKey(dateStr) {
 }
 
 export default function Pantry() {
+  usePageHeader('Mi Despensa')
   const { accessToken } = useAuth()
 
   const [products, setProducts] = useState([])
@@ -159,7 +161,6 @@ export default function Pantry() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold mb-6">Mi Despensa</h1>
 
       {/* Barra de filtros */}
       <div className="flex flex-wrap gap-3 mb-4 items-end">
