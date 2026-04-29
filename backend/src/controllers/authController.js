@@ -2,6 +2,7 @@ import { registerSchema, loginSchema } from '../utils/schemas.js'
 import {
   registerUser,
   loginUser,
+  getUserById,
   generateAccessToken,
   generateRefreshToken,
 } from '../services/authService.js'
@@ -60,8 +61,9 @@ export async function refresh(req, res) {
 
     const payload = jwt.verify(token, JWT_REFRESH_SECRET)
     const accessToken = generateAccessToken(payload.userId)
+    const user = await getUserById(payload.userId)
 
-    res.status(200).json({ accessToken })
+    res.status(200).json({ accessToken, user })
   } catch (err) {
     res.status(401).json({ error: 'Sesión expirada o inválida' })
   }

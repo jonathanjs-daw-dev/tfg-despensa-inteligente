@@ -15,6 +15,7 @@ export function AuthProvider({ children }) {
         if (res && res.ok) {
           const data = await res.json()
           setAccessToken(data.accessToken)
+          setUser(data.user)
         }
       } catch {
         // No hay sesión activa

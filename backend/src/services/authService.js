@@ -16,6 +16,13 @@ export function generateRefreshToken(userId) {
   return jwt.sign({ userId }, JWT_REFRESH_SECRET, { expiresIn: JWT_REFRESH_EXPIRES_IN })
 }
 
+export async function getUserById(id) {
+  return prisma.user.findUnique({
+    where: { id },
+    select: { id: true, name: true, email: true },
+  })
+}
+
 export async function registerUser({ name, email, password }) {
   const existing = await prisma.user.findUnique({ where: { email } })
   if (existing) {
