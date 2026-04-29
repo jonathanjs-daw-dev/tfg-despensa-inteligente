@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { shoppingListApi } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import { Button } from '@/components/ui/button'
+import { usePageHeader } from '@/context/PageHeaderContext'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -72,16 +73,17 @@ export default function ShoppingList() {
   const pending = items.filter((i) => !i.isChecked)
   const checked = items.filter((i) => i.isChecked)
 
+  usePageHeader(
+    'Lista de la compra',
+    checked.length > 0 ? (
+      <Button variant="outline" size="sm" onClick={handleClearChecked}>
+        Limpiar comprados ({checked.length})
+      </Button>
+    ) : null,
+  )
+
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold">Lista de la compra</h1>
-        {checked.length > 0 && (
-          <Button variant="outline" size="sm" onClick={handleClearChecked}>
-            Limpiar comprados ({checked.length})
-          </Button>
-        )}
-      </div>
 
       {/* Formulario añadir ítem */}
       <Card className="mb-6">

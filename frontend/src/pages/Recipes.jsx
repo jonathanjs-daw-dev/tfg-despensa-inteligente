@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { recipesApi } from '@/services/api'
 import { Button } from '@/components/ui/button'
+import { usePageHeader } from '@/context/PageHeaderContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
@@ -175,14 +176,15 @@ export default function Recipes() {
 
   const isLoading = status === 'loading' || status === 'streaming'
 
+  usePageHeader(
+    'Recetas sugeridas',
+    <Button onClick={handleGenerate} disabled={isLoading}>
+      {isLoading ? 'Generando...' : 'Generar recetas'}
+    </Button>,
+  )
+
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Recetas sugeridas</h1>
-        <Button onClick={handleGenerate} disabled={isLoading}>
-          {isLoading ? 'Generando...' : 'Generar recetas'}
-        </Button>
-      </div>
 
       {error && (
         <p className="text-sm text-red-500">{error}</p>

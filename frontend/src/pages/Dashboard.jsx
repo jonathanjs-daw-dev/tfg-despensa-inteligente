@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { productsApi } from '@/services/api'
 import { useAuth } from '@/context/AuthContext'
+import { usePageHeader } from '@/context/PageHeaderContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -36,6 +37,7 @@ function formatDate(dateStr) {
 }
 
 export default function Dashboard() {
+  usePageHeader('Dashboard')
   const { accessToken } = useAuth()
   const [products, setProducts] = useState([])
 
@@ -70,7 +72,6 @@ export default function Dashboard() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold mb-6">Dashboard</h1>
 
       {/* Stat cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">

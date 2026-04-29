@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { productsApi } from '@/services/api'
 import { useAuth } from '@/context/AuthContext'
+import { usePageHeader } from '@/context/PageHeaderContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -57,6 +58,7 @@ const EMPTY_FORM = {
 }
 
 export default function AddProduct() {
+  usePageHeader('Añadir producto')
   const { accessToken } = useAuth()
   const [form, setForm] = useState(EMPTY_FORM)
   const [error, setError] = useState('')
@@ -111,7 +113,6 @@ export default function AddProduct() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold mb-6">Añadir producto</h1>
 
       <Card className="w-full">
         <CardHeader>
