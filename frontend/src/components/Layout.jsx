@@ -98,7 +98,9 @@ export default function Layout({ children }) {
         </header>
 
         {/* Contenido de la página */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-20 md:pb-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-20 md:pb-6">
+          <div className="max-w-5xl mx-auto">{children}</div>
+        </main>
 
         {/* Bottom tab bar — solo móvil */}
         <nav className="md:hidden fixed bottom-0 left-0 right-0 z-10 bg-white border-t border-gray-200 flex h-16">

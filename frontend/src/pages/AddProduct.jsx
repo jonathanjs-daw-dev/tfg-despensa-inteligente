@@ -15,7 +15,24 @@ import {
 import { DatePicker } from '@/components/DatePicker'
 import { BarcodeScanner } from '@/components/BarcodeScanner'
 
-const UNITS = ['kg', 'g', 'mg', 'L', 'ml', 'cl', 'oz', 'lb', 'unidad', 'docena', 'pack', 'lata', 'bote', 'bolsa', 'caja', 'sobre']
+const UNITS = [
+  'kg',
+  'g',
+  'mg',
+  'L',
+  'ml',
+  'cl',
+  'oz',
+  'lb',
+  'unidad',
+  'docena',
+  'pack',
+  'lata',
+  'bote',
+  'bolsa',
+  'caja',
+  'sobre',
+]
 
 const CATEGORIES = [
   'LACTEOS',
@@ -96,71 +113,49 @@ export default function AddProduct() {
     <div>
       <h1 className="text-2xl font-semibold mb-6">Añadir producto</h1>
 
-      <Card className="w-full max-w-lg">
+      <Card className="w-full">
         <CardHeader>
           <CardTitle className="text-base">Nuevo producto</CardTitle>
         </CardHeader>
         <CardContent>
-          {showScanner ? (
-            <BarcodeScanner onResult={handleScanResult} onClose={() => setShowScanner(false)} />
-          ) : (
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full mb-4"
-              onClick={() => { setForm(EMPTY_FORM); setError(''); setSuccess(false); setShowScanner(true) }}
-            >
-              Escanear código de barras
-            </Button>
-          )}
-
-          <form onSubmit={handleAdd} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Nombre</Label>
-              <Input id="name" name="name" value={form.name} onChange={handleFormChange} required />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              {showScanner ? (
+                <BarcodeScanner onResult={handleScanResult} onClose={() => setShowScanner(false)} />
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setForm(EMPTY_FORM)
+                    setError('')
+                    setSuccess(false)
+                    setShowScanner(true)
+                  }}
+                >
+                  Escanear código de barras
+                </Button>
+              )}
             </div>
 
-            <div className="space-y-2">
-              <Label>Categoría</Label>
-              <Select
-                value={form.category}
-                onValueChange={(val) => {
-                  setForm({ ...form, category: val })
-                  setSuccess(false)
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {CATEGORIES.map((c) => (
-                    <SelectItem key={c} value={c}>
-                      {c}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
+            <form onSubmit={handleAdd} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="quantity">Cantidad</Label>
+                <Label htmlFor="name">Nombre</Label>
                 <Input
-                  id="quantity"
-                  type="number"
-                  step="0.1"
-                  name="quantity"
-                  value={form.quantity}
+                  id="name"
+                  name="name"
+                  value={form.name}
                   onChange={handleFormChange}
                   required
                 />
               </div>
+
               <div className="space-y-2">
-                <Label>Unidad</Label>
+                <Label>Categoría</Label>
                 <Select
-                  value={form.unit}
+                  value={form.category}
                   onValueChange={(val) => {
-                    setForm({ ...form, unit: val })
+                    setForm({ ...form, category: val })
                     setSuccess(false)
                   }}
                 >
@@ -168,38 +163,72 @@ export default function AddProduct() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {UNITS.map((u) => (
-                      <SelectItem key={u} value={u}>
-                        {u}
+                    {CATEGORIES.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label>Fecha caducidad</Label>
-              <DatePicker
-                value={form.expiryDate}
-                onChange={(val) => {
-                  setForm({ ...form, expiryDate: val })
-                  setSuccess(false)
-                }}
-              />
-            </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="quantity">Cantidad</Label>
+                  <Input
+                    id="quantity"
+                    type="number"
+                    step="0.1"
+                    name="quantity"
+                    value={form.quantity}
+                    onChange={handleFormChange}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Unidad</Label>
+                  <Select
+                    value={form.unit}
+                    onValueChange={(val) => {
+                      setForm({ ...form, unit: val })
+                      setSuccess(false)
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {UNITS.map((u) => (
+                        <SelectItem key={u} value={u}>
+                          {u}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
 
-            {error && <p className="text-sm text-red-500">{error}</p>}
-            {success && (
-              <p className="text-sm text-green-600 font-medium">
-                ✓ Producto añadido correctamente.
-              </p>
-            )}
+              <div className="space-y-2">
+                <Label>Fecha caducidad</Label>
+                <DatePicker
+                  value={form.expiryDate}
+                  onChange={(val) => {
+                    setForm({ ...form, expiryDate: val })
+                    setSuccess(false)
+                  }}
+                />
+              </div>
 
-            <Button type="submit" className="w-full">
-              Añadir producto
-            </Button>
-          </form>
+              {error && <p className="text-sm text-red-500">{error}</p>}
+              {success && (
+                <p className="text-sm text-green-600 font-medium">
+                  ✓ Producto añadido correctamente.
+                </p>
+              )}
+
+              <Button type="submit">Añadir producto</Button>
+            </form>
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -33,10 +33,16 @@ export function BarcodeScanner({ onResult, onClose }) {
               setStatus('loading')
 
               const res = await barcodesApi.lookup(accessToken, decodedText)
-              if (!res) { setStatus('error'); return }
+              if (!res) {
+                setStatus('error')
+                return
+              }
 
               const data = await res.json()
-              if (!res.ok || !data.found) { setStatus('error'); return }
+              if (!res.ok || !data.found) {
+                setStatus('error')
+                return
+              }
 
               onResult({
                 name: data.name,
@@ -49,9 +55,13 @@ export function BarcodeScanner({ onResult, onClose }) {
             },
             () => {}
           )
-          .then(() => { started = true })
+          .then(() => {
+            started = true
+          })
       })
-      .catch(() => { if (!cancelled) setStatus('error') })
+      .catch(() => {
+        if (!cancelled) setStatus('error')
+      })
 
     return () => {
       cancelled = true
@@ -67,9 +77,7 @@ export function BarcodeScanner({ onResult, onClose }) {
       {status === 'scanning' && (
         <p className="text-sm text-gray-500">Apunta la cámara al código de barras del producto.</p>
       )}
-      {status === 'loading' && (
-        <p className="text-sm text-gray-500">Buscando producto...</p>
-      )}
+      {status === 'loading' && <p className="text-sm text-gray-500">Buscando producto...</p>}
       {status === 'error' && (
         <p className="text-sm text-red-500">
           Producto no encontrado en la base de datos. Rellena el formulario manualmente.
@@ -78,7 +86,7 @@ export function BarcodeScanner({ onResult, onClose }) {
 
       <div id="barcode-reader" className="w-full min-h-64" />
 
-      <Button variant="outline" size="sm" className="w-full" onClick={onClose}>
+      <Button variant="outline" size="sm" onClick={onClose}>
         Cancelar
       </Button>
     </div>
