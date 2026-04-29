@@ -6,8 +6,10 @@ import authRoutes from './routes/auth.js'
 import productsRoutes from './routes/products.js'
 import shoppingListRoutes from './routes/shopping-list.js'
 import barcodesRoutes from './routes/barcodes.js'
+import recipesRoutes from './routes/recipes.js'
 
 const app = express()
+app.set('trust proxy', 1)
 
 app.use(
   cors({
@@ -22,6 +24,7 @@ app.use('/api/auth', authRoutes)
 app.use('/api/products', productsRoutes)
 app.use('/api/shopping-list', shoppingListRoutes)
 app.use('/api/barcodes', barcodesRoutes)
+app.use('/api/recipes', recipesRoutes)
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' })
