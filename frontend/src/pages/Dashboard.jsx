@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { productsApi } from '@/services/api'
 import { useAuth } from '@/context/AuthContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -97,6 +98,21 @@ export default function Dashboard() {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      <div className="mb-4">
+        <Link
+          to="/recipes"
+          className="flex items-center justify-between px-4 py-3 rounded-lg border border-green-200 bg-green-50 hover:bg-green-100 transition-colors"
+        >
+          <div>
+            <p className="text-sm font-semibold text-green-800">Recetas sugeridas con IA</p>
+            <p className="text-xs text-green-600">Genera recetas basadas en lo que tienes en tu despensa</p>
+          </div>
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

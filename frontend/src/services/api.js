@@ -42,6 +42,12 @@ export const productsApi = {
   remove: (token, id) => apiFetch(`/products/${id}`, { method: 'DELETE' }, token),
 }
 
+export const recipesApi = {
+  getSaved: (token) => apiFetch('/recipes/saved', {}, token),
+  save: (token, recipe) => apiFetch('/recipes/saved', { method: 'POST', body: JSON.stringify(recipe) }, token),
+  remove: (token, id) => apiFetch(`/recipes/saved/${id}`, { method: 'DELETE' }, token),
+}
+
 export const barcodesApi = {
   lookup: (token, code) => apiFetch(`/barcodes/${encodeURIComponent(code)}`, {}, token),
 }
