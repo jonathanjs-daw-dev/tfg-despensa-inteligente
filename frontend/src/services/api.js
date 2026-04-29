@@ -42,6 +42,10 @@ export const productsApi = {
   remove: (token, id) => apiFetch(`/products/${id}`, { method: 'DELETE' }, token),
 }
 
+export const barcodesApi = {
+  lookup: (token, code) => apiFetch(`/barcodes/${encodeURIComponent(code)}`, {}, token),
+}
+
 export const shoppingListApi = {
   getAll: (token) => apiFetch('/shopping-list', {}, token),
 

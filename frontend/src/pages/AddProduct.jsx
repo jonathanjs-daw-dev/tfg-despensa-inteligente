@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { DatePicker } from '@/components/DatePicker'
+import { BarcodeScanner } from '@/components/BarcodeScanner'
 
 const UNITS = ['kg', 'g', 'mg', 'L', 'ml', 'cl', 'oz', 'lb', 'unidad', 'docena', 'pack', 'lata', 'bote', 'bolsa', 'caja', 'sobre']
 
@@ -35,6 +36,7 @@ const EMPTY_FORM = {
   quantity: '',
   unit: 'unidad',
   expiryDate: '',
+  barcode: '',
 }
 
 export default function AddProduct() {
@@ -42,10 +44,23 @@ export default function AddProduct() {
   const [form, setForm] = useState(EMPTY_FORM)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [showScanner, setShowScanner] = useState(false)
 
   function handleFormChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value })
     setSuccess(false)
+  }
+
+  function handleScanResult(data) {
+    setForm((prev) => ({
+      ...prev,
+      name: data.name || prev.name,
+      category: data.category || prev.category,
+      barcode: data.barcode || prev.barcode,
+      quantity: data.quantity != null ? String(data.quantity) : prev.quantity,
+      unit: data.unit || prev.unit,
+    }))
+    setShowScanner(false)
   }
 
   async function handleAdd(e) {
@@ -53,10 +68,15 @@ export default function AddProduct() {
     setError('')
     setSuccess(false)
 
+    if (!form.expiryDate) {
+      setError('La fecha de caducidad es obligatoria')
+      return
+    }
+
     const payload = {
       ...form,
       quantity: parseFloat(form.quantity),
-      expiryDate: form.expiryDate ? new Date(form.expiryDate).toISOString() : null,
+      expiryDate: new Date(form.expiryDate).toISOString(),
     }
 
     const res = await productsApi.create(accessToken, payload)
@@ -81,6 +101,19 @@ export default function AddProduct() {
           <CardTitle className="text-base">Nuevo producto</CardTitle>
         </CardHeader>
         <CardContent>
+          {showScanner ? (
+            <BarcodeScanner onResult={handleScanResult} onClose={() => setShowScanner(false)} />
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full mb-4"
+              onClick={() => { setForm(EMPTY_FORM); setError(''); setSuccess(false); setShowScanner(true) }}
+            >
+              Escanear código de barras
+            </Button>
+          )}
+
           <form onSubmit={handleAdd} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Nombre</Label>

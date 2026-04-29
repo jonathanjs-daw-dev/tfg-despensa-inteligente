@@ -5,6 +5,7 @@ import { CORS_ORIGIN } from './config/env.js'
 import authRoutes from './routes/auth.js'
 import productsRoutes from './routes/products.js'
 import shoppingListRoutes from './routes/shopping-list.js'
+import barcodesRoutes from './routes/barcodes.js'
 
 const app = express()
 
@@ -20,6 +21,7 @@ app.use(cookieParser())
 app.use('/api/auth', authRoutes)
 app.use('/api/products', productsRoutes)
 app.use('/api/shopping-list', shoppingListRoutes)
+app.use('/api/barcodes', barcodesRoutes)
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' })
