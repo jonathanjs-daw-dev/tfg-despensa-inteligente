@@ -82,12 +82,15 @@ model ShoppingList {
 }
 
 model SavedRecipe {
-  id          Int      @id @default(autoincrement())
-  userId      Int      @map("user_id")
-  name        String
-  ingredients Json
-  steps       Json
-  createdAt   DateTime @default(now()) @map("created_at")
+  id            Int      @id @default(autoincrement())
+  userId        Int      @map("user_id")
+  name          String
+  description   String   @default("")
+  imageUrl      String?  @map("image_url")
+  estimatedTime String   @default("") @map("estimated_time")
+  ingredients   Json
+  steps         Json
+  createdAt     DateTime @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

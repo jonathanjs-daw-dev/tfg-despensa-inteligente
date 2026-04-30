@@ -1,6 +1,7 @@
 import {
   generateRecipes,
   getSavedRecipes,
+  getSavedRecipeById,
   saveRecipe,
   deleteSavedRecipe,
 } from '../services/recipeService.js'
@@ -30,6 +31,18 @@ export async function getSaved(req, res) {
   try {
     const recipes = await getSavedRecipes(req.userId)
     res.status(200).json(recipes)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+}
+
+export async function getSavedById(req, res) {
+  try {
+    const id = parseInt(req.params.id)
+    if (isNaN(id)) return res.status(400).json({ error: 'ID no válido' })
+    const recipe = await getSavedRecipeById(req.userId, id)
+    if (!recipe) return res.status(404).json({ error: 'Receta no encontrada' })
+    res.status(200).json(recipe)
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
