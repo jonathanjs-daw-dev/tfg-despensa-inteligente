@@ -1,88 +1,42 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import { recipesApi } from '@/services/api'
 import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { usePageHeader } from '@/context/PageHeaderContext'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import RecipeCard from '@/components/RecipeCard'
+import RecipeSheet from '@/components/RecipeSheet'
+import { Sparkles, Bookmark } from 'lucide-react'
 
 const BASE_URL = import.meta.env.VITE_API_URL
-
-function RecipeCard({ recipe, onSave, onRemove, saved }) {
-  return (
-    <Card className="flex flex-col overflow-hidden">
-      <div className="aspect-video w-full overflow-hidden bg-gray-100">
-        <img
-          src={recipe.imageUrl}
-          alt={recipe.name}
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            e.target.src = 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg'
-          }}
-        />
-      </div>
-      <CardHeader className="pb-2">
-        <div className="flex items-start justify-between gap-2">
-          <CardTitle className="text-base leading-snug">{recipe.name}</CardTitle>
-          <Badge variant="outline" className="shrink-0 text-xs">{recipe.estimatedTime}</Badge>
-        </div>
-        <p className="text-sm text-gray-500">{recipe.description}</p>
-      </CardHeader>
-      <CardContent className="flex-1 space-y-4">
-        <div>
-          <p className="text-sm font-medium mb-1">Ingredientes</p>
-          <ul className="text-sm text-gray-600 space-y-0.5">
-            {recipe.ingredients.map((ing, i) => (
-              <li key={i}>• {ing.quantity} {ing.unit} de {ing.name}</li>
-            ))}
-          </ul>
-        </div>
-        <div>
-          <p className="text-sm font-medium mb-1">Preparación</p>
-          <ol className="text-sm text-gray-600 space-y-1 list-decimal list-inside">
-            {recipe.steps.map((step, i) => (
-              <li key={i}>{step}</li>
-            ))}
-          </ol>
-        </div>
-        <Button
-          variant={saved ? 'secondary' : 'outline'}
-          size="sm"
-          className="w-full mt-auto"
-          onClick={() => saved ? onRemove(recipe) : onSave(recipe)}
-        >
-          {saved ? '✓ Guardada' : 'Guardar receta'}
-        </Button>
-      </CardContent>
-    </Card>
-  )
-}
+const FAVORITES_PREVIEW = 4
 
 function RecipeCardSkeleton() {
   return (
     <Card className="overflow-hidden animate-pulse">
-      <div className="aspect-video w-full bg-gray-200" />
-      <CardHeader className="pb-2">
-        <div className="h-4 bg-gray-200 rounded w-3/4" />
-        <div className="h-3 bg-gray-100 rounded w-full mt-1" />
-      </CardHeader>
-      <CardContent className="space-y-2">
-        <div className="h-3 bg-gray-100 rounded w-1/2" />
-        <div className="h-3 bg-gray-100 rounded w-2/3" />
-        <div className="h-3 bg-gray-100 rounded w-1/2" />
-      </CardContent>
+      <div className="aspect-[4/3] w-full bg-gray-200" />
+      <div className="p-3 space-y-2">
+        <div className="h-3 bg-gray-200 rounded w-3/4" />
+        <div className="h-3 bg-gray-100 rounded w-1/3" />
+      </div>
     </Card>
   )
 }
 
 export default function Recipes() {
   const { accessToken } = useAuth()
+  const navigate = useNavigate()
+
   const [generated, setGenerated] = useState([])
   const [savedRecipes, setSavedRecipes] = useState([])
   const [savedIds, setSavedIds] = useState(new Set())
   const [status, setStatus] = useState('idle')
   const [pendingCount, setPendingCount] = useState(0)
   const [error, setError] = useState('')
+  const [showAllFavorites, setShowAllFavorites] = useState(false)
+  const [activeRecipe, setActiveRecipe] = useState(null)
+  const [sheetOpen, setSheetOpen] = useState(false)
 
   useEffect(() => {
     async function loadSaved() {
@@ -140,7 +94,7 @@ export default function Recipes() {
             try {
               const inner = JSON.parse(msg)
               msg = inner?.error?.message ?? msg
-            } catch {}
+            } catch { /* mantener msg original si no es JSON */ }
             setError(msg)
             setStatus('error')
             setPendingCount(0)
@@ -165,7 +119,7 @@ export default function Recipes() {
     setSavedIds((prev) => new Set([...prev, recipe.name]))
   }
 
-  async function handleRemoveSaved(recipe) {
+  async function handleRemove(recipe) {
     const target = savedRecipes.find((r) => r.name === recipe.name)
     if (!target) return
     const res = await recipesApi.remove(accessToken, target.id)
@@ -174,55 +128,101 @@ export default function Recipes() {
     setSavedIds((prev) => { const s = new Set(prev); s.delete(recipe.name); return s })
   }
 
+  function openSheet(recipe) {
+    setActiveRecipe(recipe)
+    setSheetOpen(true)
+  }
+
   const isLoading = status === 'loading' || status === 'streaming'
+  const visibleFavorites = showAllFavorites ? savedRecipes : savedRecipes.slice(0, FAVORITES_PREVIEW)
 
   usePageHeader(
-    'Recetas sugeridas',
-    <Button onClick={handleGenerate} disabled={isLoading}>
+    'Recetas IA',
+    <Button onClick={handleGenerate} disabled={isLoading} size="sm">
       {isLoading ? 'Generando...' : 'Generar recetas'}
     </Button>,
   )
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
 
-      {error && (
-        <p className="text-sm text-red-500">{error}</p>
-      )}
+      {/* Top — recetas generadas */}
+      <section className="space-y-4">
+        {error && <p className="text-sm text-red-500">{error}</p>}
 
-      {(status !== 'idle') && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {generated.map((recipe, i) => (
-            <RecipeCard
-              key={i}
-              recipe={recipe}
-              saved={savedIds.has(recipe.name)}
-              onSave={handleSave}
-              onRemove={handleRemoveSaved}
-            />
-          ))}
-          {Array.from({ length: pendingCount }).map((_, i) => (
-            <RecipeCardSkeleton key={`skeleton-${i}`} />
-          ))}
+        {status === 'idle' ? (
+          <div className="flex flex-col items-center justify-center text-center py-12 px-4 rounded-xl border border-dashed border-gray-200 space-y-3">
+            <Sparkles className="w-8 h-8 text-gray-300" />
+            <p className="font-medium text-gray-700">Genera recetas con tus ingredientes usando IA</p>
+            <p className="text-sm text-gray-400 max-w-sm">
+              Usa los alimentos que tienes en la despensa, priorizando los que van a caducar pronto.
+            </p>
+            <Button onClick={handleGenerate} className="mt-2">
+              Generar recetas
+            </Button>
+          </div>
+        ) : (
+          /* Desktop: grid 2 columnas — Mobile: carrusel horizontal */
+          <div className="md:grid md:grid-cols-2 md:gap-4 flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 md:overflow-visible md:pb-0 scrollbar-none">
+            {generated.map((recipe, i) => (
+              <div key={i} className="snap-start shrink-0 w-[75vw] md:w-auto">
+                <RecipeCard recipe={recipe} onClick={() => openSheet(recipe)} />
+              </div>
+            ))}
+            {Array.from({ length: pendingCount }).map((_, i) => (
+              <div key={`skeleton-${i}`} className="snap-start shrink-0 w-[75vw] md:w-auto">
+                <RecipeCardSkeleton />
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Bottom — favoritos */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-semibold flex items-center gap-2">
+            <Bookmark className="w-4 h-4" />
+            Favoritos
+          </h2>
+          {savedRecipes.length > FAVORITES_PREVIEW && (
+            <button
+              className="text-sm text-gray-500 hover:text-gray-800 transition-colors"
+              onClick={() => setShowAllFavorites((v) => !v)}
+            >
+              {showAllFavorites ? 'Ver menos' : 'Ver más'}
+            </button>
+          )}
         </div>
-      )}
 
-      {savedRecipes.length > 0 && (
-        <div>
-          <h2 className="text-lg font-semibold mb-4">Mis recetas guardadas</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {savedRecipes.map((recipe) => (
+        {savedRecipes.length === 0 ? (
+          <div className="flex flex-col items-center justify-center text-center py-10 px-4 rounded-xl border border-dashed border-gray-200 space-y-2">
+            <Bookmark className="w-7 h-7 text-gray-300" />
+            <p className="text-sm text-gray-400">
+              Añade recetas que te gusten a favoritos para tenerlas siempre a mano.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {visibleFavorites.map((recipe) => (
               <RecipeCard
                 key={recipe.id}
-                recipe={{ ...recipe, ingredients: recipe.ingredients, steps: recipe.steps }}
-                saved={true}
-                onSave={handleSave}
-                onRemove={handleRemoveSaved}
+                recipe={recipe}
+                onClick={() => navigate(`/recipes/favorites/${recipe.id}`)}
               />
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </section>
+
+      <RecipeSheet
+        recipe={activeRecipe}
+        open={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        onSave={handleSave}
+        onRemove={handleRemove}
+        saved={activeRecipe ? savedIds.has(activeRecipe.name) : false}
+      />
     </div>
   )
 }
