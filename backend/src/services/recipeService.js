@@ -11,11 +11,13 @@ const recipeSchema = z.object({
   name: z.string().min(1),
   description: z.string().min(1),
   estimatedTime: z.string().min(1),
-  ingredients: z.array(z.object({
-    name: z.string(),
-    quantity: z.string(),
-    unit: z.string(),
-  })),
+  ingredients: z.array(
+    z.object({
+      name: z.string(),
+      quantity: z.string(),
+      unit: z.string(),
+    })
+  ),
   steps: z.array(z.string()).min(1),
 })
 
@@ -30,12 +32,18 @@ async function checkUserLimit(userId) {
   const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000)
 
   const [lastHour, lastDay] = await Promise.all([
-    prisma.aiUsageLog.count({ where: { userId, actionType: 'recipe_generation', createdAt: { gte: oneHourAgo } } }),
-    prisma.aiUsageLog.count({ where: { userId, actionType: 'recipe_generation', createdAt: { gte: oneDayAgo } } }),
+    prisma.aiUsageLog.count({
+      where: { userId, actionType: 'recipe_generation', createdAt: { gte: oneHourAgo } },
+    }),
+    prisma.aiUsageLog.count({
+      where: { userId, actionType: 'recipe_generation', createdAt: { gte: oneDayAgo } },
+    }),
   ])
 
   if (lastHour >= 3 || lastDay >= 10) {
-    const error = new Error('Has alcanzado el límite de generación de recetas. Inténtalo más tarde.')
+    const error = new Error(
+      'Has alcanzado el límite de generación de recetas. Inténtalo más tarde.'
+    )
     error.status = 429
     throw error
   }
@@ -60,7 +68,10 @@ async function geminiWithRetry(params, maxRetries = 3) {
     try {
       return await ai.models.generateContent(params)
     } catch (err) {
-      const is503 = err?.status === 503 || err?.message?.includes('503') || err?.message?.includes('UNAVAILABLE')
+      const is503 =
+        err?.status === 503 ||
+        err?.message?.includes('503') ||
+        err?.message?.includes('UNAVAILABLE')
       if (is503 && attempt < maxRetries) {
         await new Promise((r) => setTimeout(r, delay))
         delay *= 2
@@ -73,12 +84,16 @@ async function geminiWithRetry(params, maxRetries = 3) {
 
 async function generateOneRecipe(ingredients, previousNames) {
   const ingredientList = ingredients
-    .map((p) => `- ${sanitize(p.name)} (caduca: ${p.expiryDate ? new Date(p.expiryDate).toLocaleDateString('es-ES') : 'sin fecha'})`)
+    .map(
+      (p) =>
+        `- ${sanitize(p.name)} (caduca: ${p.expiryDate ? new Date(p.expiryDate).toLocaleDateString('es-ES') : 'sin fecha'})`
+    )
     .join('\n')
 
-  const excludeClause = previousNames.length > 0
-    ? `No repitas estas recetas ya sugeridas: ${previousNames.join(', ')}.`
-    : ''
+  const excludeClause =
+    previousNames.length > 0
+      ? `No repitas estas recetas ya sugeridas: ${previousNames.join(', ')}.`
+      : ''
 
   const prompt = `Eres un chef experto en cocina española y mediterránea.
 Genera UNA receta sencilla usando principalmente estos ingredientes disponibles en la despensa, priorizando los que caducan antes:
@@ -112,11 +127,12 @@ Responde ÚNICAMENTE con un objeto JSON válido con esta estructura exacta, sin 
   })
 
   const text = response.text.trim()
-  const cleaned = text.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
+  const jsonMatch = text.match(/\{[\s\S]*\}/)
+  if (!jsonMatch) throw new Error('Respuesta de Gemini no es JSON válido')
 
   let parsed
   try {
-    parsed = JSON.parse(cleaned)
+    parsed = JSON.parse(jsonMatch[0])
   } catch {
     throw new Error('Respuesta de Gemini no es JSON válido')
   }
@@ -128,8 +144,9 @@ Responde ÚNICAMENTE con un objeto JSON válido con esta estructura exacta, sin 
       model: 'gemini-2.5-flash',
       contents: prompt,
     })
-    const retryText = retry.text.trim().replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
-    parsed = JSON.parse(retryText)
+    const retryMatch = retry.text.trim().match(/\{[\s\S]*\}/)
+    if (!retryMatch) throw new Error('Respuesta de Gemini no es JSON válido tras reintento')
+    parsed = JSON.parse(retryMatch[0])
     const retryValidated = recipeSchema.safeParse(parsed)
     if (!retryValidated.success) throw new Error('Respuesta de Gemini no válida tras reintento')
     return retryValidated.data
@@ -143,9 +160,7 @@ export async function generateRecipes(userId, sendEvent) {
 
   const products = await prisma.product.findMany({
     where: { userId, NOT: { category: 'LIMPIEZA' } },
-    orderBy: [
-      { expiryDate: { sort: 'asc', nulls: 'last' } },
-    ],
+    orderBy: [{ expiryDate: { sort: 'asc', nulls: 'last' } }],
   })
 
   if (products.length === 0) {
