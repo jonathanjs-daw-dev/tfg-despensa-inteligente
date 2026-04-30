@@ -175,11 +175,18 @@ export async function getSavedRecipes(userId) {
   })
 }
 
+export async function getSavedRecipeById(userId, id) {
+  return prisma.savedRecipe.findFirst({ where: { id, userId } })
+}
+
 export async function saveRecipe(userId, data) {
   return prisma.savedRecipe.create({
     data: {
       userId,
       name: data.name,
+      description: data.description ?? '',
+      imageUrl: data.imageUrl ?? null,
+      estimatedTime: data.estimatedTime ?? '',
       ingredients: data.ingredients,
       steps: data.steps,
     },
