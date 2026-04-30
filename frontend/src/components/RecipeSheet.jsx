@@ -1,91 +1,78 @@
-import { useEffect, useState } from 'react'
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Clock } from 'lucide-react'
+import { Clock, Bookmark } from 'lucide-react'
 
 const FALLBACK_IMAGE = 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg'
 
-function useIsDesktop() {
-  const [isDesktop, setIsDesktop] = useState(() => window.innerWidth >= 768)
-
-  useEffect(() => {
-    const mq = window.matchMedia('(min-width: 768px)')
-    const handler = (e) => setIsDesktop(e.matches)
-    mq.addEventListener('change', handler)
-    return () => mq.removeEventListener('change', handler)
-  }, [])
-
-  return isDesktop
-}
-
 export default function RecipeSheet({ recipe, open, onClose, onSave, onRemove, saved }) {
-  const isDesktop = useIsDesktop()
-
   if (!recipe) return null
 
-  return (
-    <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
-      <SheetContent
-        side={isDesktop ? 'right' : 'bottom'}
-        className={isDesktop ? 'w-[480px] overflow-y-auto' : 'h-[90dvh] overflow-y-auto rounded-t-xl'}
-      >
-        <SheetHeader className="mb-4">
-          <SheetTitle className="text-lg leading-snug pr-6">{recipe.name}</SheetTitle>
-          {recipe.estimatedTime && (
-            <Badge variant="secondary" className="w-fit text-xs gap-1 font-normal">
-              <Clock className="w-3 h-3" />
-              {recipe.estimatedTime}
-            </Badge>
-          )}
-        </SheetHeader>
+  const ingredients = Array.isArray(recipe.ingredients) ? recipe.ingredients : []
+  const steps = Array.isArray(recipe.steps) ? recipe.steps : []
 
-        <div className="space-y-5">
-          <div className="aspect-video w-full overflow-hidden rounded-md bg-gray-100">
-            <img
-              src={recipe.imageUrl || FALLBACK_IMAGE}
-              alt={recipe.name}
-              className="w-full h-full object-cover"
-              onError={(e) => { e.target.src = FALLBACK_IMAGE }}
-            />
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="block w-[90dvw] md:w-[65dvw] p-0 md:p-12 max-h-[90dvh] overflow-y-auto">
+        {/* Imagen */}
+        <div className="aspect-video h-[300px] w-full overflow-hidden rounded-t-xl bg-gray-100">
+          <img
+            src={recipe.imageUrl || FALLBACK_IMAGE}
+            alt={recipe.name}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              e.target.src = FALLBACK_IMAGE
+            }}
+          />
+        </div>
+
+        {/* Contenido */}
+        <div className="p-4 md:p-0 md:pt-4 space-y-6">
+          {/* Cabecera */}
+          <div className="space-y-2 pr-6">
+            <h2 className="text-xl font-bold leading-snug">{recipe.name}</h2>
+            {recipe.estimatedTime && (
+              <Badge variant="secondary" className="text-xs gap-1 font-normal">
+                <Clock className="w-3 h-3" />
+                {recipe.estimatedTime}
+              </Badge>
+            )}
+            {recipe.description && <p className="text-sm text-gray-500">{recipe.description}</p>}
           </div>
 
-          {recipe.description && (
-            <p className="text-sm text-gray-600">{recipe.description}</p>
-          )}
-
+          {/* Ingredientes */}
           <div>
-            <p className="text-sm font-semibold mb-2">Ingredientes</p>
+            <h3 className="text-sm font-semibold mb-3">Ingredientes</h3>
             <ul className="text-sm text-gray-600 space-y-1">
-              {recipe.ingredients.map((ing, i) => (
-                <li key={i}>• {ing.quantity} {ing.unit} de {ing.name}</li>
+              {ingredients.map((ing, i) => (
+                <li key={i}>
+                  • {ing.quantity} {ing.unit} de {ing.name}
+                </li>
               ))}
             </ul>
           </div>
 
+          {/* Preparación */}
           <div>
-            <p className="text-sm font-semibold mb-2">Preparación</p>
-            <ol className="text-sm text-gray-600 space-y-2 list-decimal list-inside">
-              {recipe.steps.map((step, i) => (
+            <h3 className="text-sm font-semibold mb-3">Preparación</h3>
+            <ol className="text-sm text-gray-600 space-y-3 list-decimal list-inside">
+              {steps.map((step, i) => (
                 <li key={i}>{step}</li>
               ))}
             </ol>
           </div>
 
+          {/* Acción */}
           <Button
             variant={saved ? 'secondary' : 'default'}
-            className="w-full"
-            onClick={() => saved ? onRemove(recipe) : onSave(recipe)}
+            className="w-full gap-2"
+            onClick={() => (saved ? onRemove(recipe) : onSave(recipe))}
           >
-            {saved ? '✓ Guardada en favoritos' : 'Guardar en favoritos'}
+            <Bookmark className="w-4 h-4" />
+            {saved ? 'Guardada en favoritos' : 'Guardar en favoritos'}
           </Button>
         </div>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   )
 }

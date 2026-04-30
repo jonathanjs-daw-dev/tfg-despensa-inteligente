@@ -1,81 +1,38 @@
-import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import { recipesApi } from '@/services/api'
 import { usePageHeader } from '@/context/PageHeaderContext'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Clock, ArrowLeft, Trash2 } from 'lucide-react'
+import { Clock, ArrowLeft, Bookmark } from 'lucide-react'
 
 const FALLBACK_IMAGE = 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg'
 
-export default function RecipeFavoriteDetail() {
-  const { id } = useParams()
-  const { accessToken } = useAuth()
+export default function RecipePreview() {
+  const { state } = useLocation()
   const navigate = useNavigate()
+  const { accessToken } = useAuth()
+  const [saving, setSaving] = useState(false)
 
-  const [recipe, setRecipe] = useState(null)
-  const [status, setStatus] = useState('loading')
-  const [removing, setRemoving] = useState(false)
+  const recipe = state?.recipe
 
-  useEffect(() => {
-    async function load() {
-      const res = await recipesApi.getById(accessToken, id)
-      if (!res || !res.ok) {
-        setStatus('error')
-        return
-      }
-      const data = await res.json()
-      setRecipe(data)
-      setStatus('done')
-    }
-    load()
-  }, [accessToken, id])
+  usePageHeader('Receta sugerida')
 
-  async function handleRemove() {
-    setRemoving(true)
-    const res = await recipesApi.remove(accessToken, id)
+  if (!recipe) {
+    navigate('/recipes', { replace: true })
+    return null
+  }
+
+  async function handleSave() {
+    setSaving(true)
+    const res = await recipesApi.save(accessToken, recipe)
     if (!res || !res.ok) {
-      setRemoving(false)
+      setSaving(false)
       return
     }
-    navigate('/recipes')
-  }
-
-  usePageHeader(
-    recipe?.name ?? 'Receta',
-    <Button
-      variant="ghost"
-      size="icon"
-      className="text-gray-500 hover:text-red-500"
-      disabled={removing}
-      onClick={handleRemove}
-    >
-      <Trash2 className="w-4 h-4" />
-    </Button>,
-  )
-
-  if (status === 'loading') {
-    return (
-      <div className="space-y-4 animate-pulse">
-        <div className="aspect-video w-full rounded-xl bg-gray-200" />
-        <div className="h-4 bg-gray-200 rounded w-1/2" />
-        <div className="h-3 bg-gray-100 rounded w-full" />
-        <div className="h-3 bg-gray-100 rounded w-2/3" />
-      </div>
-    )
-  }
-
-  if (status === 'error' || !recipe) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
-        <p className="text-gray-500">Receta no encontrada.</p>
-        <Button variant="ghost" onClick={() => navigate('/recipes')}>
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Volver a recetas
-        </Button>
-      </div>
-    )
+    const saved = await res.json()
+    navigate(`/recipes/favorites/${saved.id}`, { replace: true })
   }
 
   const ingredients = Array.isArray(recipe.ingredients) ? recipe.ingredients : []
@@ -130,6 +87,11 @@ export default function RecipeFavoriteDetail() {
           ))}
         </ol>
       </div>
+
+      <Button onClick={handleSave} disabled={saving} className="w-full gap-2">
+        <Bookmark className="w-4 h-4" />
+        {saving ? 'Guardando...' : 'Guardar en favoritos'}
+      </Button>
     </div>
   )
 }

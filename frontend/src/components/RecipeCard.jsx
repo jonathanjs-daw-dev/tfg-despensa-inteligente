@@ -7,10 +7,10 @@ const FALLBACK_IMAGE = 'https://images.pexels.com/photos/1640777/pexels-photo-16
 export default function RecipeCard({ recipe, onClick }) {
   return (
     <Card
-      className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+      className="flex flex-col h-full overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
       onClick={onClick}
     >
-      <div className="aspect-[4/3] w-full overflow-hidden bg-gray-100">
+      <div className="aspect-[16/9] w-full overflow-hidden bg-gray-100 shrink-0">
         <img
           src={recipe.imageUrl || FALLBACK_IMAGE}
           alt={recipe.name}
@@ -18,7 +18,7 @@ export default function RecipeCard({ recipe, onClick }) {
           onError={(e) => { e.target.src = FALLBACK_IMAGE }}
         />
       </div>
-      <div className="p-3 space-y-1">
+      <div className="p-3 space-y-1 flex-1">
         <p className="text-sm font-semibold leading-snug line-clamp-2">{recipe.name}</p>
         {recipe.estimatedTime && (
           <Badge variant="secondary" className="text-xs gap-1 font-normal">

@@ -15,10 +15,10 @@ const FAVORITES_PREVIEW = 4
 function RecipeCardSkeleton() {
   return (
     <Card className="overflow-hidden animate-pulse">
-      <div className="aspect-[4/3] w-full bg-gray-200" />
-      <div className="p-3 space-y-2">
-        <div className="h-3 bg-gray-200 rounded w-3/4" />
-        <div className="h-3 bg-gray-100 rounded w-1/3" />
+      <div className="aspect-[16/9] w-full bg-gray-200" />
+      <div className="p-3 space-y-1">
+        <div className="h-4 bg-gray-200 rounded w-3/4" />
+        <div className="h-5 bg-gray-100 rounded w-1/4" />
       </div>
     </Card>
   )
@@ -163,7 +163,7 @@ export default function Recipes() {
           </div>
         ) : (
           /* Desktop: grid 2 columnas — Mobile: carrusel horizontal */
-          <div className="md:grid md:grid-cols-2 md:gap-4 flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 md:overflow-visible md:pb-0 scrollbar-none">
+          <div className="md:grid md:grid-cols-2 md:gap-4 flex items-stretch gap-3 overflow-x-auto snap-x snap-mandatory pb-2 md:overflow-visible md:pb-0 scrollbar-none">
             {generated.map((recipe, i) => (
               <div key={i} className="snap-start shrink-0 w-[75vw] md:w-auto">
                 <RecipeCard recipe={recipe} onClick={() => openSheet(recipe)} />
