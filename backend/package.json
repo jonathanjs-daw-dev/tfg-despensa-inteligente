@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "node --watch server.js",
-    "start": "node server.js"
+    "start": "npx prisma migrate deploy && node server.js"
   },
   "dependencies": {
     "@acpr/rate-limit-postgresql": "^1.4.1",
