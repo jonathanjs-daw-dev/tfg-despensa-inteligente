@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { productsApi } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import { usePageHeader } from '@/context/PageHeaderContext'
@@ -77,13 +78,14 @@ function getStatusKey(dateStr) {
 export default function Pantry() {
   usePageHeader('Mi Despensa')
   const { accessToken } = useAuth()
+  const [searchParams] = useSearchParams()
 
   const [products, setProducts] = useState([])
   const [editingId, setEditingId] = useState(null)
   const [editForm, setEditForm] = useState({})
   const [search, setSearch] = useState('')
   const [filterCategory, setFilterCategory] = useState('ALL')
-  const [filterStatus, setFilterStatus] = useState('ALL')
+  const [filterStatus, setFilterStatus] = useState(() => searchParams.get('estado') ?? 'ALL')
 
   useEffect(() => {
     loadProducts()
@@ -147,7 +149,12 @@ export default function Pantry() {
   const filteredProducts = products.filter((p) => {
     const matchName = p.name.toLowerCase().includes(search.toLowerCase())
     const matchCat = filterCategory === 'ALL' || p.category === filterCategory
-    const matchStatus = filterStatus === 'ALL' || getStatusKey(p.expiryDate) === filterStatus
+    const statusKey = getStatusKey(p.expiryDate)
+    const matchStatus =
+      filterStatus === 'ALL' ||
+      (filterStatus === 'PROXIMO_CADUCAR'
+        ? statusKey === 'URGENTE' || statusKey === 'PRÓXIMO'
+        : statusKey === filterStatus)
     return matchName && matchCat && matchStatus
   })
 
