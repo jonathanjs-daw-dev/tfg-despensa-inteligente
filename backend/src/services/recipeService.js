@@ -82,6 +82,21 @@ async function geminiWithRetry(params, maxRetries = 3) {
   }
 }
 
+function parseGeminiJson(raw) {
+  if (!raw) throw new Error('Respuesta de Gemini no es JSON válido')
+  const text = raw.trim()
+  // Strip markdown fences if present (e.g. ```json ... ```)
+  const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
+  const candidate = fenceMatch ? fenceMatch[1] : text
+  const jsonMatch = candidate.match(/\{[\s\S]*\}/)
+  if (!jsonMatch) throw new Error('Respuesta de Gemini no es JSON válido')
+  try {
+    return JSON.parse(jsonMatch[0])
+  } catch {
+    throw new Error('Respuesta de Gemini no es JSON válido')
+  }
+}
+
 async function generateOneRecipe(ingredients, previousNames) {
   const ingredientList = ingredients
     .map(
@@ -121,33 +136,23 @@ Responde ÚNICAMENTE con un objeto JSON válido con esta estructura exacta, sin 
   ]
 }`
 
-  const response = await geminiWithRetry({
+  const geminiConfig = {
     model: 'gemini-2.5-flash',
     contents: prompt,
-  })
-
-  const text = response.text.trim()
-  const jsonMatch = text.match(/\{[\s\S]*\}/)
-  if (!jsonMatch) throw new Error('Respuesta de Gemini no es JSON válido')
-
-  let parsed
-  try {
-    parsed = JSON.parse(jsonMatch[0])
-  } catch {
-    throw new Error('Respuesta de Gemini no es JSON válido')
+    config: {
+      responseMimeType: 'application/json',
+      thinkingConfig: { thinkingBudget: 0 },
+    },
   }
 
+  const response = await geminiWithRetry(geminiConfig)
+
+  const parsed = parseGeminiJson(response.text)
   const validated = recipeSchema.safeParse(parsed)
   if (!validated.success) {
-    // Reintento único
-    const retry = await geminiWithRetry({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-    })
-    const retryMatch = retry.text.trim().match(/\{[\s\S]*\}/)
-    if (!retryMatch) throw new Error('Respuesta de Gemini no es JSON válido tras reintento')
-    parsed = JSON.parse(retryMatch[0])
-    const retryValidated = recipeSchema.safeParse(parsed)
+    const retry = await geminiWithRetry(geminiConfig)
+    const retryParsed = parseGeminiJson(retry.text)
+    const retryValidated = recipeSchema.safeParse(retryParsed)
     if (!retryValidated.success) throw new Error('Respuesta de Gemini no válida tras reintento')
     return retryValidated.data
   }
@@ -158,13 +163,22 @@ Responde ÚNICAMENTE con un objeto JSON válido con esta estructura exacta, sin 
 export async function generateRecipes(userId, sendEvent) {
   await checkUserLimit(userId)
 
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
   const products = await prisma.product.findMany({
-    where: { userId, NOT: { category: 'LIMPIEZA' } },
+    where: {
+      userId,
+      NOT: { category: 'LIMPIEZA' },
+      OR: [{ expiryDate: null }, { expiryDate: { gte: today } }],
+    },
     orderBy: [{ expiryDate: { sort: 'asc', nulls: 'last' } }],
   })
 
   if (products.length === 0) {
-    const error = new Error('No tienes productos en la despensa para generar recetas')
+    const error = new Error(
+      'No tienes productos disponibles en la despensa (puede que todos estén caducados)'
+    )
     error.status = 400
     throw error
   }
